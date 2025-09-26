@@ -3,31 +3,34 @@ import SearchInput from './components/SearchInput'
 import UserCard from './components/UserCard'
 import axios from 'axios'
 import ReactModal from 'react-modal'
-import { ToastContainer} from 'react-toastify'
+import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { motion } from 'framer-motion'
 import { CircularProgress } from '@mui/material'
 import { useAuth } from './context/AuthContext'
+import { useNavigate } from 'react-router-dom'   // 👈 importamos el hook
 
 export default function App() {
   const [usuarios, setUsuarios] = useState([])
   const [loading, setLoading] = useState(false)
   const [modalAbierto, setModalAbierto] = useState(false)
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null)
-  
-
-  const { logout } = useAuth()
-
   const [buscando, setBuscando] = useState(false)
-
   const [filtrados, setFiltrados] = useState([])
 
+  const { logout } = useAuth()
+  const navigate = useNavigate()   // 👈 inicializamos el hook
+
   const API_URL = 'http://localhost:3001'
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')  
+  }
 
   const obtenerUsuarios = async () => {
     try {
       const response = await axios.get(`${API_URL}/usuarios`)
-
       setUsuarios(response.data)
       setFiltrados(response.data)
     } catch (error) {
@@ -88,10 +91,16 @@ export default function App() {
     setUsuarioSeleccionado(null)
   }
 
-
   return (
     <div className="min-h-screen bg-gray-100 p-4">
-      <button className='bg-red-500 text-white px-4 py-2 rounded' onClick={logout}>logout</button>
+      {/* 🔹 Botón logout que redirige */}
+      <button
+        className="bg-green-500 text-white px-4 py-2 rounded"
+        onClick={handleLogout}
+      >
+        Cerrar sesión
+      </button>
+
       <h1 className="text-2xl font-bold mb-4 text-center">
         Buscador interactivo
       </h1>
@@ -110,6 +119,7 @@ export default function App() {
           <CircularProgress color="primary" />
         </div>
       )}
+
       {!buscando && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {Array.isArray(filtrados) &&
@@ -165,6 +175,8 @@ export default function App() {
           </motion.div>
         )}
       </ReactModal>
+
+      <ToastContainer /> 
     </div>
   )
 }
